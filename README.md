@@ -1,5 +1,5 @@
-# This project is retired, archived, and no longer supported. You are welcome to continue to use and fork the repository.
 
+[![Build Status](https://dev.azure.com/CTJGP-B39/My-Eshop-WebApp/_apis/build/status%2FSjon1111.ContosoAir?branchName=master)](https://dev.azure.com/CTJGP-B39/My-Eshop-WebApp/_build/latest?definitionId=105&branchName=master)
 
 # Microsoft.Github CI Demo
 

@@ -6,15 +6,12 @@ pool:
 
 steps:
   # Set up Node.js version
-  - task: Npm@1
+  - task: UseNode@1
     inputs:
-      command: "custom"
-      customCommand: "install --production"
-      
+      version: '20.x'  # Match your local version
 
   # Install OS dependencies needed for native node modules
   - script: |
-      npm install
       sudo apt-get update
       sudo apt-get install -y python3 g++ make
     displayName: "Install OS Dependencies"

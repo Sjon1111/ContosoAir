@@ -1,43 +1,63 @@
-pool:
-  vmImage: ubuntu-latest
 trigger:
   - master
+
+pool:
+  vmImage: ubuntu-latest
+
 steps:
-  - task: Npm@1
+  # Set up Node.js version
+  - task: UseNode@1
     inputs:
-      command: "custom"
-      customCommand: "install --production"
+      version: '20.x'  # Match your local version
+
+  # Install OS dependencies needed for native node modules
   - script: |
-      npm install
-      npm test
       sudo apt-get update
       sudo apt-get install -y python3 g++ make
+    displayName: "Install OS Dependencies"
+
+  # Install Node modules (prod + dev)
+  - script: |
+      npm ci
+    displayName: "Install Node Modules"
+
+  # Run tests and generate results
+  - script: |
       npm install jest --save-dev
-      npx jest
-    displayName: "Run unit tests"
-    continueOnError: true
+      npx jest --testResultsProcessor=jest-junit --coverage
+    displayName: "Run Tests and Coverage"
+
+  # Publish test results
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     condition: succeededOrFailed()
     inputs:
-      testResultsFiles: $(System.DefaultWorkingDirectory)/test-report.xml
+      testResultsFiles: '**/junit.xml'  # Default output file for jest-junit
+
+  # Publish code coverage
   - task: PublishCodeCoverageResults@1
     displayName: "Publish Code Coverage"
-    condition: "in(variables['Agent.JobStatus'], 'Succeeded')"
+    condition: succeeded()
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: "$(System.DefaultWorkingDirectory)/coverage/*coverage.xml"
-      reportDirectory: $(System.DefaultWorkingDirectory)/coverage
+      summaryFileLocation: "$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml"
+      reportDirectory: "$(System.DefaultWorkingDirectory)/coverage"
+
+  # Archive files
   - task: ArchiveFiles@2
     displayName: "Archive sources"
     inputs:
       rootFolderOrFile: $(Build.SourcesDirectory)
       includeRootFolder: false
+
+  # Copy ARM templates
   - task: CopyFiles@2
     displayName: "Copy ARM templates"
     inputs:
       SourceFolder: deployment
       Contents: "*.json"
       TargetFolder: $(build.artifactstagingdirectory)/Templates
+
+  # Publish artifact
   - task: PublishBuildArtifacts@1
     displayName: "Publish Artifact: drop"

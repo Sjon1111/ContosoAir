@@ -10,6 +10,10 @@ steps:
   - script: |
       npm install
       npm test
+      sudo apt-get update
+      sudo apt-get install -y python3 g++ make
+      npm install jest --save-dev
+      npx jest
     displayName: "Run unit tests"
     continueOnError: true
   - task: PublishTestResults@2
